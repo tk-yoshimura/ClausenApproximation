@@ -9,13 +9,10 @@ namespace ClausenApproximation {
 
             List<MultiPrecision<Pow2.N32>> xs = new();
 
-            for (MultiPrecision<Pow2.N32> x = 0; x < 1 / 16384d; x += 1 / 268435456d) {
+            for (MultiPrecision<Pow2.N32> x = 0; x < 1 / 16384d; x += 1 / 33554432d) {
                 xs.Add(x);
             }
-            for (MultiPrecision<Pow2.N32> x = 1 / 16384d; x < 16383 / 16384d; x += 1 / 16384d) {
-                xs.Add(x);
-            }
-            for (MultiPrecision<Pow2.N32> x = 16383 / 16384d; x <= 1; x += 1 / 268435456d) {
+            for (MultiPrecision<Pow2.N32> x = 1 / 16384d; x <= 1; x += 1 / 16384d) {
                 xs.Add(x);
             }
 
