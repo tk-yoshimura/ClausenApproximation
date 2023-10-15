@@ -88,10 +88,10 @@ namespace ClausenApproximation {
         public static MultiPrecision<N> ZetaEvenM1(int n) {
             if (n >= zetaevenm1_table.Count) {
                 for (int k = zetaevenm1_table.Count; k <= n; k++) {
-                    MultiPrecision<Plus8<N>> zeta_even =
-                        MultiPrecision<Plus8<N>>.Pow(2 * MultiPrecision<Plus8<N>>.PI, 2 * k)
-                        * MultiPrecision<Plus8<N>>.Abs(MultiPrecision<Plus8<N>>.BernoulliSequence(k))
-                        * MultiPrecision<Plus8<N>>.TaylorSequence[2 * k] / 2;
+                    MultiPrecision<Plus64<N>> zeta_even =
+                        MultiPrecision<Plus64<N>>.Pow(2 * MultiPrecision<Plus64<N>>.PI, 2 * k)
+                        * MultiPrecision<Plus64<N>>.Abs(MultiPrecision<Plus64<N>>.BernoulliSequence(k))
+                        * MultiPrecision<Plus64<N>>.TaylorSequence[2 * k] / 2;
 
                     zetaevenm1_table.Add((zeta_even - 1).Convert<N>());
                 }
