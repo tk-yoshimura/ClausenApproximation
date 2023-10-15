@@ -58,6 +58,10 @@ namespace ClausenApproximation {
                 throw new ArgumentOutOfRangeException(nameof(x));
             }
 
+            if (x == 0 || x == 1) {
+                return 0;
+            }
+
             MultiPrecision<N> x2 = x * x;
             MultiPrecision<N> xpi = MultiPrecision<N>.PI * x;
 
