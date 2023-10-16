@@ -58,9 +58,9 @@ namespace ClausenApproximation {
 
             MultiPrecision<N> c =
                 -MultiPrecision<N>.Log(xpi / MultiPrecision<N>.E * (1 - x2 / 4))
-                + ((x.Exponent > -MultiPrecision<N>.Bits / 64)
-                    ? (2 * (1 - MultiPrecision<N>.Log((2 + x) / (2 - x)) / x))
-                    : -LogLogLimit(x)
+                - ((x.Exponent > -MultiPrecision<N>.Bits / 64)
+                    ? (2 * (MultiPrecision<N>.Log((2 + x) / (2 - x)) / x - 1))
+                    : LogLogLimit(x)
                 );
 
             MultiPrecision<N> ds, s = c, w = x2;
