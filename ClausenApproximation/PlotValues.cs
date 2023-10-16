@@ -2,7 +2,7 @@
 
 namespace ClausenApproximation {
     internal class PlotValues {
-        static void Main() {
+        static void Main_() {
             StreamWriter sw = new("../../../../results/clausen2_n64.csv");
 
             sw.WriteLine($"x,clausen2(x),clausen2(x^2),clausen2(x^2)/(x*(1-x))");

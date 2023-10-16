@@ -8,50 +8,9 @@ namespace ClausenApproximation {
         private static readonly List<MultiPrecision<N>> zeta_term_coefs = new() {
             MultiPrecision<N>.NaN
         };
-
-        public static MultiPrecision<N> Fourier(MultiPrecision<N> x, long max_term = 65536) {
-            if (x < 0 || !(x <= MultiPrecision<N>.PI)) {
-                throw new ArgumentOutOfRangeException(nameof(x));
-            }
-
-            MultiPrecision<N> ds, s = 0;
-
-            for (long k = 1; k < max_term; k += 2) {
-                ds =
-                    MultiPrecision<N>.Sin(x * k) / (k * k)
-                    + MultiPrecision<N>.Sin(x * k + x) / ((k + 1) * (k + 1));
-
-                s += ds;
-
-                if (ds.Exponent <= s.Exponent - MultiPrecision<N>.Bits) {
-                    return s;
-                }
-            }
-
-            throw new ArithmeticException("Not convergence Fourier.");
-        }
-
-        public static MultiPrecision<N> FourierPI(MultiPrecision<N> x, long max_term = 65536) {
-            if (x < 0 || !(x <= 1)) {
-                throw new ArgumentOutOfRangeException(nameof(x));
-            }
-
-            MultiPrecision<N> ds, s = 0;
-
-            for (long k = 1; k < max_term; k += 2) {
-                ds =
-                    MultiPrecision<N>.SinPI(x * k) / (k * k)
-                    + MultiPrecision<N>.SinPI(x * k + x) / ((k + 1) * (k + 1));
-
-                s += ds;
-
-                if (ds.Exponent <= s.Exponent - MultiPrecision<N>.Bits) {
-                    return s;
-                }
-            }
-
-            throw new ArithmeticException("Not convergence Fourier.");
-        }
+        private static readonly List<MultiPrecision<N>> logloglimit_coefs = new() {
+            MultiPrecision<N>.Zero
+        };
 
         public static MultiPrecision<N> ZetaAcceleration(MultiPrecision<N> x, int max_term = 1024) {
             if (x < 0 || !(x <= 1)) {
@@ -85,6 +44,53 @@ namespace ClausenApproximation {
             throw new ArithmeticException("Not convergence ZetaAcceleration.");
         }
 
+        public static MultiPrecision<N> ZetaAccelerationMk2(MultiPrecision<N> x, int max_term = 1024) {
+            if (x < 0 || !(x <= 1)) {
+                throw new ArgumentOutOfRangeException(nameof(x));
+            }
+
+            if (x == 0 || x == 1) {
+                return 0;
+            }
+
+            MultiPrecision<N> x2 = x * x;
+            MultiPrecision<N> xpi = MultiPrecision<N>.PI * x;
+
+            MultiPrecision<N> c =
+                -MultiPrecision<N>.Log(xpi / MultiPrecision<N>.E * (1 - x2 / 4))
+                + ((x.Exponent > -MultiPrecision<N>.Bits / 64)
+                    ? (2 * (1 - MultiPrecision<N>.Log((2 + x) / (2 - x)) / x))
+                    : -LogLogLimit(x)
+                );
+
+            MultiPrecision<N> ds, s = c, w = x2;
+
+            for (int k = 1; k < max_term; k++) {
+                ds = w * ZetaCoef(k);
+                s += ds;
+
+                if (ds.Exponent <= s.Exponent - MultiPrecision<N>.Bits) {
+                    return s * xpi;
+                }
+
+                w *= x2;
+            }
+
+            throw new ArithmeticException("Not convergence ZetaAcceleration.");
+        }
+
+        public static MultiPrecision<N> LogLogLimit(MultiPrecision<N> x, int terms = 32) {
+            MultiPrecision<N> s = 0, x2 = x * x, w = x2;
+            for (int k = 1; k <= terms; k++) {
+                MultiPrecision<N> c = LogLogLimitCoef(k);
+
+                s += w * c;
+                w *= x2;
+            }
+
+            return s;
+        }
+
         public static MultiPrecision<N> ZetaEvenM1(int n) {
             if (n >= zetaevenm1_table.Count) {
                 for (int k = zetaevenm1_table.Count; k <= n; k++) {
@@ -112,6 +118,20 @@ namespace ClausenApproximation {
             }
 
             return zeta_term_coefs[n];
+        }
+
+        public static MultiPrecision<N> LogLogLimitCoef(int n) {
+            if (n >= logloglimit_coefs.Count) {
+                for (int k = logloglimit_coefs.Count; k <= n; k++) {
+                    MultiPrecision<N> c = MultiPrecision<N>.Ldexp(
+                        MultiPrecision<N>.Div(1, 2 * k + 1), -2 * k + 1
+                    );
+
+                    logloglimit_coefs.Add(c);
+                }
+            }
+
+            return logloglimit_coefs[n];
         }
     }
 }
