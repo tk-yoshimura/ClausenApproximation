@@ -11,6 +11,7 @@ namespace ClausenApproximation {
         private static readonly List<MultiPrecision<N>> logloglimit_coefs = new() {
             MultiPrecision<N>.Zero
         };
+        private static readonly List<MultiPrecision<N>> nearzero_coefs = new();
 
         public static MultiPrecision<N> ZetaAcceleration(MultiPrecision<N> x, int max_term = 1024) {
             if (x < 0 || !(x <= 1)) {
@@ -79,6 +80,35 @@ namespace ClausenApproximation {
             throw new ArithmeticException("Not convergence ZetaAcceleration.");
         }
 
+        public static MultiPrecision<N> ZetaAccelerationMk3(MultiPrecision<N> x, int max_term = 1024) {
+            if (x < 0 || !(x <= 1)) {
+                throw new ArgumentOutOfRangeException(nameof(x));
+            }
+
+            if (x == 0 || x == 1) {
+                return 0;
+            }
+
+            MultiPrecision<N> x2 = x * x;
+            MultiPrecision<N> xpi = MultiPrecision<N>.PI * x;
+            MultiPrecision<N> c = -MultiPrecision<N>.Log(xpi / MultiPrecision<N>.E * (1 - x2 / 4));
+
+            MultiPrecision<N> ds, s = c, w = x2;
+
+            for (int k = 1; k < max_term; k++) {
+                ds = w * NearZeroCoef(k);
+                s += ds;
+
+                if (ds.Exponent <= s.Exponent - MultiPrecision<N>.Bits) {
+                    return s * xpi;
+                }
+
+                w *= x2;
+            }
+
+            throw new ArithmeticException("Not convergence ZetaAcceleration.");
+        }
+
         public static MultiPrecision<N> LogLogLimit(MultiPrecision<N> x, int terms = 32) {
             MultiPrecision<N> s = 0, x2 = x * x, w = x2;
             for (int k = 1; k <= terms; k++) {
@@ -132,6 +162,18 @@ namespace ClausenApproximation {
             }
 
             return logloglimit_coefs[n];
+        }
+
+        public static MultiPrecision<N> NearZeroCoef(int n) {
+            if (n >= nearzero_coefs.Count) {
+                for (int k = nearzero_coefs.Count; k <= n; k++) {
+                    MultiPrecision<N> c = ZetaCoef(k) - LogLogLimitCoef(k);
+
+                    nearzero_coefs.Add(c);
+                }
+            }
+
+            return nearzero_coefs[n];
         }
     }
 }
